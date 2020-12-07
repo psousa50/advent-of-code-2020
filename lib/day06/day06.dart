@@ -52,13 +52,6 @@ int day06_part2() {
 
   var groupAnswersList = parseGroups(lines);
 
-  // groupAnswersList.forEach((g) {
-  //   print(g.answers);
-  //   print(g.answersCount);
-  //   print(g.allYesAnswers());
-  //   print('\n');
-  // });
-
   return groupAnswersList.fold(
       0, (sum, groupAnswers) => sum + groupAnswers.allYesAnswers().length);
 }
