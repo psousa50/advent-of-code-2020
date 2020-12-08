@@ -1,4 +1,3 @@
-import 'package:AdventOfCode2020/common.dart';
 import 'package:AdventOfCode2020/day01/day01.dart';
 import 'package:AdventOfCode2020/day02/day02.dart';
 import 'package:AdventOfCode2020/day03/day03.dart';

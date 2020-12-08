@@ -1,5 +1,14 @@
 import '../common.dart';
 
+class ModifyProgramResult {
+  final List<Instruction> program;
+  final int indexOfInstructionToModify;
+  ModifyProgramResult(
+    this.program,
+    this.indexOfInstructionToModify,
+  );
+}
+
 enum Operation {
   acc,
   jmp,
@@ -58,28 +67,37 @@ class Cpu {
         (i) => [Operation.jmp, Operation.nop].contains(i.operation), startAt);
   }
 
-  List<Instruction> modifyProgram(
-      List<Instruction> program, int indexOfInstructionToModify) {
+  ModifyProgramResult modifyProgram(
+    List<Instruction> program,
+    int indexOfInstructionToModify,
+  ) {
+    indexOfInstructionToModify = program.indexWhere(
+      (i) => [Operation.jmp, Operation.nop].contains(i.operation),
+      indexOfInstructionToModify,
+    );
+
     var instruction = program[indexOfInstructionToModify];
-    var modifiedOperation =
-        instruction.operation == Operation.jmp ? Operation.nop : Operation.jmp;
-    var modifiedInstruction =
-        Instruction(modifiedOperation, instruction.argument);
-    var modifiedProgram = List<Instruction>.from(program);
-    modifiedProgram[indexOfInstructionToModify] = modifiedInstruction;
-    return modifiedProgram;
+    var modifiedInstruction = Instruction(
+      instruction.operation == Operation.jmp ? Operation.nop : Operation.jmp,
+      instruction.argument,
+    );
+
+    var modifiedProgram = program.shallowCopy()
+      ..replaceAt(indexOfInstructionToModify, modifiedInstruction);
+
+    return ModifyProgramResult(
+      modifiedProgram,
+      indexOfInstructionToModify + 1,
+    );
   }
 
   void fixCorruptedInstruction(List<Instruction> program) {
-    var indexOfInstructionToModify = -1;
+    var indexOfInstructionToModify = 0;
     var done = false;
     while (!done) {
-      indexOfInstructionToModify = nextModifiableInstructionIndex(
-        program,
-        indexOfInstructionToModify + 1,
-      );
-      var modifiedProgram = modifyProgram(program, indexOfInstructionToModify);
-      done = !runUntilRepeatedInstruction(modifiedProgram);
+      var modified = modifyProgram(program, indexOfInstructionToModify);
+      indexOfInstructionToModify = modified.indexOfInstructionToModify;
+      done = !runUntilRepeatedInstruction(modified.program);
     }
   }
 }

@@ -5,7 +5,7 @@ List<String> readLines(int day, String file) {
       .readAsLinesSync();
 }
 
-extension ListUtils<T> on Iterable<T> {
+extension Iterables<T> on Iterable<T> {
   num sumBy(num Function(T element) f) {
     return fold(0, (total, item) => total + f(item));
   }
@@ -16,6 +16,17 @@ extension ListUtils<T> on Iterable<T> {
 
   num product() {
     return fold(1, (total, item) => total * (item as num));
+  }
+}
+
+extension Lists<T> on List<T> {
+  void replaceAt(int index, T element) {
+    removeAt(index);
+    insert(index, element);
+  }
+
+  List<T> shallowCopy() {
+    return List.from(this);
   }
 }
 
