@@ -21,7 +21,6 @@ class Instruction {
 class Cpu {
   int accumulator = 0;
   int pc = 0;
-  var visited = <int>[];
   Map<Operation, Function> execute;
 
   void acc(int argument) {
@@ -40,21 +39,57 @@ class Cpu {
     };
   }
 
-  void run(List<Instruction> program) {
-    while (!visited.contains(pc)) {
+  bool runUntilRepeatedInstruction(List<Instruction> program) {
+    var visited = <int>[];
+    accumulator = 0;
+    pc = 0;
+    while (!visited.contains(pc) && pc < program.length) {
       visited.add(pc);
       var instruction = program[pc];
       pc += 1;
       execute[instruction.operation](instruction.argument);
     }
+
+    return pc < program.length;
+  }
+
+  int nextModifiableInstructionIndex(List<Instruction> program, int startAt) {
+    return program.indexWhere(
+        (i) => [Operation.jmp, Operation.nop].contains(i.operation), startAt);
+  }
+
+  List<Instruction> modifyProgram(
+      List<Instruction> program, int indexOfInstructionToModify) {
+    var instruction = program[indexOfInstructionToModify];
+    var modifiedOperation =
+        instruction.operation == Operation.jmp ? Operation.nop : Operation.jmp;
+    var modifiedInstruction =
+        Instruction(modifiedOperation, instruction.argument);
+    var modifiedProgram = List<Instruction>.from(program);
+    modifiedProgram[indexOfInstructionToModify] = modifiedInstruction;
+    return modifiedProgram;
+  }
+
+  void fixCorruptedInstruction(List<Instruction> program) {
+    var indexOfInstructionToModify = -1;
+    var done = false;
+    while (!done) {
+      indexOfInstructionToModify = nextModifiableInstructionIndex(
+        program,
+        indexOfInstructionToModify + 1,
+      );
+      var modifiedProgram = modifyProgram(program, indexOfInstructionToModify);
+      done = !runUntilRepeatedInstruction(modifiedProgram);
+    }
   }
 }
 
 Instruction parseInstruction(String line) {
-  var s = line.split(' ');
-  var operation =
-      Operation.values.firstWhere((o) => o.toString() == 'Operation.${s[0]}');
-  var argument = int.parse(s[1]);
+  var parts = line.split(' ');
+  // var operation = Operation.values
+  //     .firstWhere((o) => o.toString() == 'Operation.${parts[0]}');
+  var operation = enumFromString(Operation.values, parts[0]);
+  var argument = int.parse(parts[1]);
   return Instruction(operation, argument);
 }
 
@@ -67,14 +102,17 @@ int day08_part1() {
 
   var program = parseProgram(lines);
 
-  var cpu = Cpu();
-  cpu.run(program);
+  var cpu = Cpu()..runUntilRepeatedInstruction(program);
 
   return cpu.accumulator;
 }
 
 int day08_part2() {
-  var lines = readLines(8, 'sample');
+  var lines = readLines(8, 'data');
 
-  return 0;
+  var program = parseProgram(lines);
+
+  var cpu = Cpu()..fixCorruptedInstruction(program);
+
+  return cpu.accumulator;
 }

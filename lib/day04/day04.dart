@@ -30,9 +30,7 @@ void addFields(Passport passport, String line) {
   var fields = line.split(' ');
   fields.forEach((field) {
     var f = field.split(':');
-    passport.addField(
-        FieldName.values.firstWhere((e) => e.toString() == 'FieldName.${f[0]}'),
-        f[1]);
+    passport.addField(enumFromString(FieldName.values, f[0]), f[1]);
   });
 }
 

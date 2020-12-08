@@ -1,3 +1,4 @@
+import 'package:AdventOfCode2020/common.dart';
 import 'package:AdventOfCode2020/day01/day01.dart';
 import 'package:AdventOfCode2020/day02/day02.dart';
 import 'package:AdventOfCode2020/day03/day03.dart';
@@ -5,6 +6,7 @@ import 'package:AdventOfCode2020/day04/day04.dart';
 import 'package:AdventOfCode2020/day05/day05.dart';
 import 'package:AdventOfCode2020/day06/day06.dart';
 import 'package:AdventOfCode2020/day07/day07.dart';
+import 'package:AdventOfCode2020/day08/day08.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -66,6 +68,14 @@ void main() {
     });
     test('part 2', () {
       expect(day07_part2(), 8015);
+    });
+  });
+  group('day 08', () {
+    test('part 1', () {
+      expect(day08_part1(), 1394);
+    });
+    test('part 2', () {
+      expect(day08_part2(), 1626);
     });
   });
 }
