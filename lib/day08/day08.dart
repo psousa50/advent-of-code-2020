@@ -86,8 +86,6 @@ class Cpu {
 
 Instruction parseInstruction(String line) {
   var parts = line.split(' ');
-  // var operation = Operation.values
-  //     .firstWhere((o) => o.toString() == 'Operation.${parts[0]}');
   var operation = enumFromString(Operation.values, parts[0]);
   var argument = int.parse(parts[1]);
   return Instruction(operation, argument);
