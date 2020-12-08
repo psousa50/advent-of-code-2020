@@ -35,5 +35,5 @@ int day03_part2() {
   var treeCounts =
       allSteps.map((steps) => countTrees(lines, steps[0], steps[1]));
 
-  return treeCounts.fold(1, (product, treeCount) => product * treeCount);
+  return treeCounts.product();
 }

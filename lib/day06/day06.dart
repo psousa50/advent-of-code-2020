@@ -43,8 +43,8 @@ int day06_part1() {
 
   var groupAnswersList = parseGroups(lines);
 
-  return groupAnswersList.fold(
-      0, (sum, groupAnswers) => sum + groupAnswers.uniqueAnswers.length);
+  return groupAnswersList
+      .sumBy((groupAnswers) => groupAnswers.uniqueAnswers.length);
 }
 
 int day06_part2() {
@@ -52,6 +52,6 @@ int day06_part2() {
 
   var groupAnswersList = parseGroups(lines);
 
-  return groupAnswersList.fold(
-      0, (sum, groupAnswers) => sum + groupAnswers.allYesAnswers().length);
+  return groupAnswersList
+      .sumBy((groupAnswers) => groupAnswers.allYesAnswers().length);
 }
