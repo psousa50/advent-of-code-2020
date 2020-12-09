@@ -6,6 +6,7 @@ import 'package:AdventOfCode2020/day05/day05.dart';
 import 'package:AdventOfCode2020/day06/day06.dart';
 import 'package:AdventOfCode2020/day07/day07.dart';
 import 'package:AdventOfCode2020/day08/day08.dart';
+import 'package:AdventOfCode2020/day09/day09.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -75,6 +76,11 @@ void main() {
     });
     test('part 2', () {
       expect(day08_part2(), 1626);
+    });
+  });
+  group('day 09', () {
+    test('part 1', () {
+      expect(day09_part1(), 22477624);
     });
   });
 }
