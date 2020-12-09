@@ -31,5 +31,8 @@ const solutions = {
 
 void main(List<String> arguments) {
   var day = arguments[0];
+
+  final stopwatch = Stopwatch()..start();
   print(solutions[day]());
+  print('Time elapsed: ${stopwatch.elapsed.inMilliseconds}');
 }
