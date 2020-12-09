@@ -39,10 +39,29 @@ int day09_part1() {
   return incorrectNumber(numbers, 25);
 }
 
+int findNumbersThatSumUpTo(List<int> numbers, int requestedSum) {
+  var start = 0;
+  var sum = 0;
+  var c = 0;
+  while (sum != requestedSum && c < numbers.length) {
+    sum += numbers[c];
+    while (sum > requestedSum) {
+      sum -= numbers[start];
+      start++;
+    }
+    c++;
+  }
+
+  var end = c;
+  var sequence = numbers.sublist(start, end)..sort();
+
+  return sequence.first + sequence.last;
+}
+
 int day09_part2() {
-  var lines = readLines(9, 'sample');
+  var lines = readLines(9, 'data');
 
   var numbers = lines.map(int.parse).toList();
 
-  return incorrectNumber(numbers, 5);
+  return findNumbersThatSumUpTo(numbers, 22477624);
 }

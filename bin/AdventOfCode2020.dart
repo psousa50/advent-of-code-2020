@@ -33,6 +33,7 @@ void main(List<String> arguments) {
   var day = arguments[0];
 
   final stopwatch = Stopwatch()..start();
-  print(solutions[day]());
-  print('Time elapsed: ${stopwatch.elapsed.inMilliseconds}');
+  var solution = solutions[day]();
+  print('Time elapsed: ${stopwatch.elapsed.inMilliseconds} \n');
+  print(solution);
 }

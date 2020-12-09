@@ -82,5 +82,8 @@ void main() {
     test('part 1', () {
       expect(day09_part1(), 22477624);
     });
+    test('part 2', () {
+      expect(day09_part2(), 2980044);
+    });
   });
 }
