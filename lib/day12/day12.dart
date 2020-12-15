@@ -103,52 +103,6 @@ class Position {
   }
 }
 
-class ShipPart1 {
-  final Position position;
-  final Direction direction;
-  final Position waypoint;
-
-  ShipPart1(this.position, this.direction, this.waypoint);
-
-  static ShipPart1 north(ShipPart1 ship, int op) =>
-      ship.copyWith(position: ship.position.moveY(op));
-  static ShipPart1 south(ShipPart1 ship, int op) =>
-      ship.copyWith(position: ship.position.moveY(-op));
-  static ShipPart1 east(ShipPart1 ship, int op) =>
-      ship.copyWith(position: ship.position.moveX(op));
-  static ShipPart1 west(ShipPart1 ship, int op) =>
-      ship.copyWith(position: ship.position.moveX(-op));
-
-  static ShipPart1 forward(ShipPart1 ship, int op) => ship.copyWith(
-        position: ship.position + directionMoveForward[ship.direction] * op,
-      );
-
-  static ShipPart1 left(ShipPart1 ship, int op) => ship.copyWith(
-        direction: ship.direction.rotateLeft(op ~/ 90),
-      );
-
-  static ShipPart1 right(ShipPart1 ship, int op) => ship.copyWith(
-        direction: ship.direction.rotateRight(op ~/ 90),
-      );
-
-  @override
-  String toString() {
-    return '$position $direction';
-  }
-
-  ShipPart1 copyWith({
-    Position position,
-    Direction direction,
-    Position waypoint,
-  }) {
-    return ShipPart1(
-      position ?? this.position,
-      direction ?? this.direction,
-      waypoint ?? this.waypoint,
-    );
-  }
-}
-
 Command parseCommand(String line) {
   return Command(
     enumFromString(Action.values, line[0]),
@@ -156,61 +110,107 @@ Command parseCommand(String line) {
   );
 }
 
-var commands = {
-  Action.N: ShipPart1.north,
-  Action.S: ShipPart1.south,
-  Action.E: ShipPart1.east,
-  Action.W: ShipPart1.west,
-  Action.L: ShipPart1.left,
-  Action.R: ShipPart1.right,
-  Action.F: ShipPart1.forward,
-};
+abstract class Ship {
+  final Position position;
+  final Direction direction;
 
-ShipPart1 executePart1(ShipPart1 ship, Command c) {
-  return commands[c.action](ship, c.operand);
+  Ship(this.position, this.direction);
+
+  Ship north(int op);
+  Ship south(int op);
+  Ship east(int op);
+  Ship west(int op);
+  Ship forward(int op);
+  Ship left(int op);
+  Ship right(int op);
+
+  @override
+  String toString() {
+    return '$position $direction';
+  }
+
+  Ship execute(Command c) {
+    switch (c.action) {
+      case Action.N:
+        return north(c.operand);
+      case Action.E:
+        return east(c.operand);
+      case Action.S:
+        return south(c.operand);
+      case Action.W:
+        return west(c.operand);
+      case Action.L:
+        return left(c.operand);
+      case Action.R:
+        return right(c.operand);
+      case Action.F:
+        return forward(c.operand);
+    }
+    return this;
+  }
+}
+
+class ShipPart1 extends Ship {
+  ShipPart1(Position position, Direction direction)
+      : super(position, direction);
+
+  @override
+  Ship north(int op) => copyWith(position: position.moveY(op));
+  @override
+  Ship south(int op) => copyWith(position: position.moveY(-op));
+  @override
+  Ship east(int op) => copyWith(position: position.moveX(op));
+  @override
+  Ship west(int op) => copyWith(position: position.moveX(-op));
+  @override
+  Ship forward(int op) =>
+      copyWith(position: position + directionMoveForward[direction] * op);
+  @override
+  Ship left(int op) => copyWith(direction: direction.rotateLeft(op ~/ 90));
+  @override
+  Ship right(int op) => copyWith(direction: direction.rotateRight(op ~/ 90));
+
+  ShipPart1 copyWith({
+    Position position,
+    Direction direction,
+  }) {
+    return ShipPart1(
+      position ?? this.position,
+      direction ?? this.direction,
+    );
+  }
 }
 
 int day12_part1() {
   var lines = readLines(12, 'data');
 
-  var initialShip = ShipPart1(Position(0, 0), Direction.East, Position(1, 1));
-  var finalShip = lines.map(parseCommand).fold(initialShip, executePart1);
+  var initialShip = ShipPart1(Position(0, 0), Direction.East);
+  var finalShip =
+      lines.map(parseCommand).fold(initialShip, (s, c) => s.execute(c));
 
   return finalShip.position.x.abs() + finalShip.position.y.abs();
 }
 
-class ShipPart2 {
-  final Position position;
-  final Direction direction;
+class ShipPart2 extends Ship {
   final Position waypoint;
 
-  ShipPart2(this.position, this.direction, this.waypoint);
-
-  static ShipPart2 north(ShipPart2 ship, int op) =>
-      ship.copyWith(waypoint: ship.waypoint.moveY(op));
-  static ShipPart2 south(ShipPart2 ship, int op) =>
-      ship.copyWith(waypoint: ship.waypoint.moveY(-op));
-  static ShipPart2 east(ShipPart2 ship, int op) =>
-      ship.copyWith(waypoint: ship.waypoint.moveX(op));
-  static ShipPart2 west(ShipPart2 ship, int op) =>
-      ship.copyWith(waypoint: ship.waypoint.moveX(-op));
-
-  static ShipPart2 forward(ShipPart2 ship, int op) => ship.copyWith(
-        position: ship.position + ship.waypoint * op,
-      );
-
-  static ShipPart2 left(ShipPart2 ship, int op) => ship.copyWith(
-        waypoint: ship.waypoint.rotateLeft(op ~/ 90),
-      );
-
-  static ShipPart2 right(ShipPart2 ship, int op) => ship.copyWith(
-        waypoint: ship.waypoint.rotateRight(op ~/ 90),
-      );
+  ShipPart2(Position position, Direction direction, this.waypoint)
+      : super(position, direction);
 
   @override
-  String toString() {
-    return '$position $direction $waypoint';
-  }
+  Ship north(int op) => copyWith(waypoint: waypoint.moveY(op));
+  @override
+  Ship south(int op) => copyWith(waypoint: waypoint.moveY(-op));
+  @override
+  Ship east(int op) => copyWith(waypoint: waypoint.moveX(op));
+  @override
+  Ship west(int op) => copyWith(waypoint: waypoint.moveX(-op));
+  @override
+  Ship forward(int op) => copyWith(position: position + waypoint * op);
+  @override
+  Ship left(int op) => copyWith(waypoint: waypoint.rotateLeft(op ~/ 90));
+  @override
+  Ship right(int op) => copyWith(waypoint: waypoint.rotateRight(op ~/ 90));
 
   ShipPart2 copyWith({
     Position position,
@@ -225,25 +225,12 @@ class ShipPart2 {
   }
 }
 
-var commandsPart2 = {
-  Action.N: ShipPart2.north,
-  Action.S: ShipPart2.south,
-  Action.E: ShipPart2.east,
-  Action.W: ShipPart2.west,
-  Action.L: ShipPart2.left,
-  Action.R: ShipPart2.right,
-  Action.F: ShipPart2.forward,
-};
-
-ShipPart2 executePart2(ShipPart2 ship, Command c) {
-  return commandsPart2[c.action](ship, c.operand);
-}
-
 int day12_part2() {
   var lines = readLines(12, 'data');
 
   var initialShip = ShipPart2(Position(0, 0), Direction.East, Position(10, 1));
-  var finalShip = lines.map(parseCommand).fold(initialShip, executePart2);
+  var finalShip =
+      lines.map(parseCommand).fold(initialShip, (s, c) => s.execute(c));
 
   return finalShip.position.x.abs() + finalShip.position.y.abs();
 }
