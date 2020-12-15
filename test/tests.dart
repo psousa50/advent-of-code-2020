@@ -109,5 +109,8 @@ void main() {
     test('part 1', () {
       expect(day12_part1(), 439);
     });
+    test('part 2', () {
+      expect(day12_part2(), 12385);
+    });
   });
 }
