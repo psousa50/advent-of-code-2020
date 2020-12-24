@@ -28,11 +28,11 @@ int day13_part2() {
 
   var prod = busIds.product();
 
-  var l = times.asMap().entries.map((e) {
-    var i = e.key;
-    var ppi = (prod ~/ busIds[i]);
-    var invi = ppi.modInverse(busIds[i]);
-    return -times[i] * ppi * invi;
+  var l = times.mapIndexed((time, i) {
+    var busId = busIds[i];
+    var pp = (prod ~/ busId);
+    var inv = pp.modInverse(busId);
+    return -time * pp * inv;
   });
 
   return l.sum() % prod;

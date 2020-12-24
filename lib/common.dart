@@ -28,6 +28,10 @@ extension Lists<T> on List<T> {
   List<T> shallowCopy() {
     return List.from(this);
   }
+
+  List<T> mapIndexed(T Function(T element, int i) f) {
+    return asMap().entries.map((e) => f(e.value, e.key)).toList();
+  }
 }
 
 T enumFromString<T>(List<T> values, String value, {T defaultValue}) {
