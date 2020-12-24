@@ -30,13 +30,53 @@ class Program {
   Map<int, int> memory = {};
   List<InstructionSet> instructionsSets = [];
 
-  void run() {
+  void runPart1() {
     for (var instructionSet in instructionsSets) {
+      var andMask = instructionSet.mask.replaceAll('X', '1').bits;
+      var orMask = instructionSet.mask.replaceAll('X', '0').bits;
       for (var instruction in instructionSet.instructions) {
-        var andMask = instructionSet.mask.replaceAll('X', '1').bits;
-        var orMask = instructionSet.mask.replaceAll('X', '0').bits;
         var value = instruction.value & andMask | orMask;
         memory[instruction.address] = value;
+      }
+    }
+  }
+
+  String inc(String value, List<int> bitPositions, {int pos = 0}) {
+    if (pos >= bitPositions.length) {
+      return value;
+    }
+    var p = bitPositions[pos];
+    // print('$bitPositions $pos $p $sp');
+    return (value[p] == '0')
+        ? value.substring(0, p) + '1' + value.substring(p + 1)
+        : inc(
+            value.substring(0, p) + '0' + value.substring(p + 1), bitPositions,
+            pos: pos + 1);
+  }
+
+  void runPart2() {
+    for (var instructionSet in instructionsSets) {
+      var andMask =
+          instructionSet.mask.replaceAll('0', '1').replaceAll('X', '0').bits;
+      var orMask = instructionSet.mask.replaceAll('X', '0').bits;
+      for (var instruction in instructionSet.instructions) {
+        var xPos = instructionSet.mask
+            .split('')
+            .reversed
+            .toList()
+            .asMap()
+            .entries
+            .where((e) => e.value == 'X')
+            .map((e) => 35 - e.key)
+            .toList();
+
+        var initialAddress = instruction.address & andMask | orMask;
+        var floatingStr = '0' * 36;
+        do {
+          var address = initialAddress | floatingStr.bits;
+          memory[address] = instruction.value;
+          floatingStr = inc(floatingStr, xPos);
+        } while (floatingStr.bits > 0);
       }
     }
   }
@@ -77,13 +117,17 @@ int day14_part1() {
 
   var program = parseLines(lines);
 
-  program.run();
+  program.runPart1();
 
   return program.memorySum();
 }
 
 int day14_part2() {
-  // var lines = readLines(14, 'sample');
+  var lines = readLines(14, 'data');
 
-  return 0;
+  var program = parseLines(lines);
+
+  program.runPart2();
+
+  return program.memorySum();
 }
