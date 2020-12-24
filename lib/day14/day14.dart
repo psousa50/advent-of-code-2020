@@ -46,7 +46,6 @@ class Program {
       return value;
     }
     var p = bitPositions[pos];
-    // print('$bitPositions $pos $p $sp');
     return (value[p] == '0')
         ? value.substring(0, p) + '1' + value.substring(p + 1)
         : inc(
