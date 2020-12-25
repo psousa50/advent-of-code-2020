@@ -136,5 +136,8 @@ void main() {
     test('part 1', () {
       expect(day15_part1(), 1373);
     });
+    test('part 2', () {
+      expect(day15_part2(), 112458);
+    });
   });
 }

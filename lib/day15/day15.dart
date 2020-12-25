@@ -1,14 +1,10 @@
 import '../common.dart';
 
-int day15_part1() {
-  var lines = readLines(15, 'data');
-
-  var numbers = lines[0].split(',').map(int.parse).toList();
-
+int numberSpokenAt(int count, List<int> numbers) {
   var counts = <int, List<int>>{};
 
   int lastNumber;
-  for (var i = 0; i < 2020; i++) {
+  for (var i = 0; i < count; i++) {
     int number;
     if (i < numbers.length) {
       number = numbers[i];
@@ -28,12 +24,21 @@ int day15_part1() {
       counts[lastNumber] = [counts[lastNumber][1], i];
     }
   }
-
   return lastNumber;
 }
 
-int day15_part2() {
-  var lines = readLines(15, 'sample');
+int day15_part1() {
+  var lines = readLines(15, 'data');
 
-  return 0;
+  var numbers = lines[0].split(',').map(int.parse).toList();
+
+  return numberSpokenAt(2020, numbers);
+}
+
+int day15_part2() {
+  var lines = readLines(15, 'data');
+
+  var numbers = lines[0].split(',').map(int.parse).toList();
+
+  return numberSpokenAt(30000000, numbers);
 }
