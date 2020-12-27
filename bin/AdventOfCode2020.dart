@@ -13,6 +13,7 @@ import 'package:AdventOfCode2020/day12/day12.dart';
 import 'package:AdventOfCode2020/day13/day13.dart';
 import 'package:AdventOfCode2020/day14/day14.dart';
 import 'package:AdventOfCode2020/day15/day15.dart';
+import 'package:AdventOfCode2020/day16/day16.dart';
 
 const solutions = {
   '1_1': day01_part1,
@@ -45,6 +46,8 @@ const solutions = {
   '14_2': day14_part2,
   '15_1': day15_part1,
   '15_2': day15_part2,
+  '16_1': day16_part1,
+  '16_2': day16_part2,
 };
 
 void main(List<String> arguments) {
