@@ -1,0 +1,13 @@
+import '../common.dart';
+
+int day{day}_part1() {
+  var lines = readLines({day}, 'sample');
+
+  return 0;
+}  
+
+int day{day}_part2() {
+  var lines = readLines({day}, 'sample');
+
+  return 0;
+}  
