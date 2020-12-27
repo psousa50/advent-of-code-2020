@@ -14,6 +14,7 @@ import 'package:AdventOfCode2020/day13/day13.dart';
 import 'package:AdventOfCode2020/day14/day14.dart';
 import 'package:AdventOfCode2020/day15/day15.dart';
 import 'package:AdventOfCode2020/day16/day16.dart';
+import 'package:AdventOfCode2020/day17/day17.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -147,6 +148,11 @@ void main() {
     });
     test('part 2', () {
       expect(day16_part2(), 1382443095281);
+    });
+  });
+  group('day 17', () {
+    test('part 1', () {
+      expect(day17_part1(), 448);
     });
   });
 }

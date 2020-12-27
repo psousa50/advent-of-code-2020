@@ -29,7 +29,7 @@ extension Lists<T> on List<T> {
     return List.from(this);
   }
 
-  List<T> mapIndexed(T Function(T element, int i) f) {
+  List<K> mapIndexed<K>(K Function(T element, int i) f) {
     return asMap().entries.map((e) => f(e.value, e.key)).toList();
   }
 }
