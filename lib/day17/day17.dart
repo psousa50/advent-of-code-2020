@@ -1,86 +1,116 @@
-import 'dart:math';
+import 'package:collection/collection.dart';
 
 import '../common.dart';
 
-class Point {
-  final int x;
-  final int y;
-  final int z;
+Function listEquals = const DeepCollectionEquality().equals;
 
-  Point(this.x, this.y, this.z);
+class HyperCube {
+  final List<int> coords;
+
+  HyperCube(this.coords);
 
   @override
   String toString() {
-    return '$x $y $z';
+    return '$coords';
+  }
+
+  List<HyperCube> getNeighbours() {
+    var neighbours = <HyperCube>[];
+    var lowerPoint = this - 1;
+    var upperPoint = this + 1;
+    var cube = HyperCubeIterator(lowerPoint, upperPoint);
+    while (!cube.done) {
+      if (cube.currentCube != this) {
+        neighbours.add(cube.currentCube.copyWith());
+      }
+      cube.nextCube();
+    }
+    return neighbours;
+  }
+
+  HyperCube operator +(int value) {
+    return HyperCube(coords.map((c) => c + value).toList());
+  }
+
+  HyperCube operator -(int value) {
+    return HyperCube(coords.map((c) => c - value).toList());
   }
 
   @override
   bool operator ==(Object o) {
     if (identical(this, o)) return true;
 
-    return o is Point && o.x == x && o.y == y && o.z == z;
+    return o is HyperCube && listEquals(o.coords, coords);
   }
 
   @override
-  int get hashCode => x.hashCode ^ y.hashCode ^ z.hashCode;
+  int get hashCode => coords.sum();
+
+  HyperCube copyWith({
+    List<int> coords,
+  }) {
+    return HyperCube(
+      coords ?? List.from(this.coords),
+    );
+  }
 }
 
-class Cube extends Point {
-  Cube(int x, int y, int z) : super(x, y, z);
+class HyperCubeIterator {
+  final HyperCube lowerCube;
+  final HyperCube upperCube;
+  HyperCube currentCube;
+  bool done = false;
 
-  List<Cube> neighbours2D(int zOffset) {
-    return [
-      Cube(x - 1, y - 1, z - zOffset),
-      Cube(x - 0, y - 1, z - zOffset),
-      Cube(x + 1, y - 1, z - zOffset),
-      Cube(x - 1, y + 0, z - zOffset),
-      Cube(x - 0, y + 0, z - zOffset),
-      Cube(x + 1, y + 0, z - zOffset),
-      Cube(x - 1, y + 1, z - zOffset),
-      Cube(x - 0, y + 1, z - zOffset),
-      Cube(x + 1, y + 1, z - zOffset),
-    ];
+  HyperCubeIterator(this.lowerCube, this.upperCube) {
+    currentCube = lowerCube.copyWith();
   }
 
-  List<Cube> neighbours() {
-    return neighbours2D(-1)
-      ..addAll(neighbours2D(0)..addAll(neighbours2D(1)))
-      ..remove(this);
+  void nextCube({int pos = 0}) {
+    if (pos < currentCube.coords.length) {
+      currentCube.coords[pos]++;
+      if (currentCube.coords[pos] > upperCube.coords[pos]) {
+        currentCube.coords[pos] = lowerCube.coords[pos];
+        nextCube(pos: pos + 1);
+      }
+    } else {
+      done = true;
+    }
   }
 }
 
 class World {
-  List<Cube> cubes;
+  List<HyperCube> cubes;
 
   World(this.cubes);
 
-  bool isActive(Cube other) {
+  bool isActive(HyperCube other) {
     return cubes.contains(other);
   }
 
-  Iterable<Cube> activeNeighbours(Cube cube) {
-    return cube.neighbours().where(isActive);
+  Iterable<HyperCube> activeNeighbours(HyperCube cube) {
+    return cube.getNeighbours().where(isActive);
   }
 
   void cycle() {
-    var newCubes = List<Cube>.from(cubes.where((cube) {
-      return [2, 3].contains(activeNeighbours(cube).length);
-    }));
-    var minX = cubes.map((c) => c.x).reduce(min);
-    var maxX = cubes.map((c) => c.x).reduce(max);
-    var minY = cubes.map((c) => c.y).reduce(min);
-    var maxY = cubes.map((c) => c.y).reduce(max);
-    var minZ = cubes.map((c) => c.z).reduce(min);
-    var maxZ = cubes.map((c) => c.z).reduce(max);
-
-    for (var x = minX - 1; x <= maxX + 1; x++) {
-      for (var y = minY - 1; y <= maxY + 1; y++) {
-        for (var z = minZ - 1; z <= maxZ + 1; z++) {
-          var thisCube = Cube(x, y, z);
-          if (!isActive(thisCube) && activeNeighbours(thisCube).length == 3) {
-            newCubes.add(thisCube);
-          }
+    var newCubes = <HyperCube>[];
+    var inactiveNeighbours = <HyperCube>{};
+    for (var cube in cubes) {
+      var activeNeighboursCount = 0;
+      for (var neighbour in cube.getNeighbours()) {
+        if (isActive(neighbour)) {
+          activeNeighboursCount++;
+        } else {
+          inactiveNeighbours.add(neighbour);
         }
+      }
+      if ([2, 3].contains(activeNeighboursCount)) {
+        newCubes.add(cube.copyWith());
+      }
+    }
+
+    for (var cube in inactiveNeighbours) {
+      if (activeNeighbours(cube).length == 3) {
+        newCubes.add(cube.copyWith());
       }
     }
 
@@ -93,12 +123,13 @@ class World {
   }
 }
 
-List<Cube> parseLines(List<String> lines) {
-  var cubes = <Cube>[];
+List<HyperCube> parseLines(List<String> lines, int dimensions) {
+  var cubes = <HyperCube>[];
 
   for (var y = 0; y < lines.length; y++) {
     cubes.addAll(
-      lines[y].split('').mapIndexed((a, x) => a == '#' ? Cube(x, y, 0) : null),
+      lines[y].split('').mapIndexed((a, x) =>
+          a == '#' ? HyperCube([x, y, 0, 0].sublist(0, dimensions)) : null),
     );
   }
 
@@ -108,7 +139,7 @@ List<Cube> parseLines(List<String> lines) {
 int day17_part1() {
   var lines = readLines(17, 'data');
 
-  var cubes = parseLines(lines);
+  var cubes = parseLines(lines, 3);
   var world = World(cubes);
 
   for (var i = 0; i < 6; i++) {
@@ -119,7 +150,14 @@ int day17_part1() {
 }
 
 int day17_part2() {
-  var lines = readLines(17, 'sample');
+  var lines = readLines(17, 'data');
 
-  return 0;
+  var cubes = parseLines(lines, 4);
+  var world = World(cubes);
+
+  for (var i = 0; i < 6; i++) {
+    world.cycle();
+  }
+
+  return world.cubes.length;
 }
