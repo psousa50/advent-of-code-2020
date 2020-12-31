@@ -38,3 +38,7 @@ T enumFromString<T>(List<T> values, String value, {T defaultValue}) {
   return values.firstWhere((v) => v.toString().split('.')[1] == value,
       orElse: () => null);
 }
+
+extension IntUtils on String {
+  int toInt() => this == null ? null : int.parse(this);
+}

@@ -1,28 +1,46 @@
 import '../common.dart';
 
+typedef BinaryOperation = int Function(int, int);
+
+class Operation {
+  final String symbol;
+  final int precedence;
+  final BinaryOperation f;
+
+  Operation(this.symbol, this.precedence, this.f);
+  int execute(int v1, int v2) => f(v1, v2);
+}
+
+class Operations {
+  final Map<String, Operation> operations;
+
+  Operations(Iterable<Operation> ops)
+      : operations = ops.fold(<String, Operation>{}, (t, o) {
+          t[o.symbol] = o;
+          return t;
+        });
+
+  Operation operator [](String symbol) => operations[symbol];
+
+  bool isOperation(String symbol) => operations.keys.contains(symbol);
+}
+
 class Stack<T> {
   List<T> values = [];
 
   int get length => values.length;
-
   bool get isEmpty => values.isEmpty;
 
   void push(T value) {
     if (value != null) values.add(value);
   }
 
-  T peek([int pos = 0]) {
-    return values[values.length - 1 - pos];
+  T peek() {
+    return values.last;
   }
 
   T pop() {
-    if (values.isNotEmpty) {
-      var value = values.last;
-      values = values.sublist(0, values.length - 1);
-      return value;
-    } else {
-      return null;
-    }
+    return values.removeLast();
   }
 
   @override
@@ -33,68 +51,75 @@ class Stack<T> {
 
 class Expression {
   final List<String> tokens;
-  final Map<String, int> precedences;
+  final Operations operations;
 
-  int pos = 0;
-  var operands = Stack<int>();
-  var operations = Stack<String>();
+  int tokensCursor = 0;
+  var operandsStack = Stack<int>();
+  var operationsStack = Stack<Operation>();
 
-  Expression(this.tokens, this.precedences);
+  Expression(this.tokens, this.operations);
 
   String fetchToken() {
-    return (pos >= tokens.length) ? null : tokens[pos++];
+    return (tokensCursor >= tokens.length) ? null : tokens[tokensCursor++];
   }
 
   int fetchOperand() {
     var token = fetchToken();
     if (token == '(') {
-      var e = Expression(tokens.sublist(pos), precedences);
+      var e = Expression(tokens.sublist(tokensCursor), operations);
       var operand = e.value();
-      pos = pos + e.pos;
+      tokensCursor = tokensCursor + e.tokensCursor;
       return operand;
     } else {
-      return token != null ? int.parse(token) : null;
+      return token.toInt();
     }
   }
 
-  void performOperation() {
-    var op2 = operands.pop();
-    var op1 = operands.pop();
-    var operation = operations.pop();
-    var result = operation == '*' ? op1 * op2 : op1 + op2;
-    operands.push(result);
+  void performLastOperation() {
+    var op1 = operandsStack.pop();
+    var op2 = operandsStack.pop();
+    var operation = operationsStack.pop();
+    var result = operation.execute(op1, op2);
+    operandsStack.push(result);
   }
 
-  void calculate() {
-    if (operations.length >= 2) {
-      var lastOperation = operations.pop();
-      var prevOperation = operations.peek();
-      if (precedences[prevOperation] >= precedences[lastOperation]) {
-        performOperation();
+  void calculateIfPrecedenceAllow() {
+    if (operationsStack.length >= 2) {
+      var lastOperation = operationsStack.pop();
+      var prevOperation = operationsStack.peek();
+      if (prevOperation.precedence >= lastOperation.precedence) {
+        performLastOperation();
       }
-      operations.push(lastOperation);
+      operationsStack.push(lastOperation);
     }
+  }
+
+  bool parsing() {
+    operandsStack.push(fetchOperand());
+    var token = fetchToken();
+    if (operations.isOperation(token)) {
+      operationsStack.push(operations[token]);
+    }
+    return token != null && token != ')';
+  }
+
+  int performRemainingOperations() {
+    while (!operationsStack.isEmpty) {
+      performLastOperation();
+    }
+    return operandsStack.pop();
   }
 
   int value() {
-    String token;
-    do {
-      operands.push(fetchOperand());
-      token = fetchToken();
-      if (['+', '*'].contains(token)) {
-        operations.push(token);
-      }
-      calculate();
-    } while (token != null && token != ')');
-    while (!operations.isEmpty) {
-      performOperation();
+    while (parsing()) {
+      calculateIfPrecedenceAllow();
     }
-    return operands.pop();
+
+    return performRemainingOperations();
   }
 }
 
-Iterable<Expression> parseLines(
-    List<String> lines, Map<String, int> precendences) {
+Iterable<Expression> parseLines(List<String> lines, Operations precendences) {
   return lines.map((line) {
     var tokens = RegExp(r'\s*([0-9]|.)\s*')
         .allMatches(line)
@@ -104,11 +129,17 @@ Iterable<Expression> parseLines(
   });
 }
 
+int sum(int v1, int v2) => v1 + v2;
+int product(int v1, int v2) => v1 * v2;
+
 int day18_part1() {
   var lines = readLines(18, 'data');
 
-  var precedences = {'*': 0, '+': 0};
-  var expressions = parseLines(lines, precedences);
+  var operations = Operations([
+    Operation('*', 0, product),
+    Operation('+', 0, sum),
+  ]);
+  var expressions = parseLines(lines, operations);
 
   var values = expressions.map((e) => e.value());
 
@@ -118,8 +149,11 @@ int day18_part1() {
 int day18_part2() {
   var lines = readLines(18, 'data');
 
-  var precedences = {'*': 0, '+': 1};
-  var expressions = parseLines(lines, precedences);
+  var operations = Operations([
+    Operation('*', 0, product),
+    Operation('+', 1, sum),
+  ]);
+  var expressions = parseLines(lines, operations);
 
   var values = expressions.map((e) => e.value());
 
