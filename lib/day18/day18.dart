@@ -32,41 +32,29 @@ class Stack<T> {
 }
 
 class Expression {
-  final String expression;
+  final List<String> tokens;
   final Map<String, int> precedences;
 
   int pos = 0;
   var operands = Stack<int>();
   var operations = Stack<String>();
 
-  Expression(this.expression, this.precedences);
+  Expression(this.tokens, this.precedences);
 
   String fetchToken() {
-    if (pos >= expression.length) {
-      return null;
-    }
-    var match =
-        RegExp(r'^\s*([0-9]+|.)\s*').firstMatch(expression.substring(pos));
-    var s = pos;
-    pos = match != null ? pos + match.end : expression.length;
-    var token = match != null ? expression.substring(s, pos) : null;
-    return token.trim();
+    return (pos >= tokens.length) ? null : tokens[pos++];
   }
 
   int fetchOperand() {
     var token = fetchToken();
     if (token == '(') {
-      var e = Expression(expression.substring(pos), precedences);
+      var e = Expression(tokens.sublist(pos), precedences);
       var operand = e.value();
       pos = pos + e.pos;
       return operand;
     } else {
       return token != null ? int.parse(token) : null;
     }
-  }
-
-  String fetchOperation() {
-    return fetchToken();
   }
 
   void performOperation() {
@@ -107,16 +95,19 @@ class Expression {
 
 Iterable<Expression> parseLines(
     List<String> lines, Map<String, int> precendences) {
-  return lines.map((line) => Expression(line, precendences));
+  return lines.map((line) {
+    var tokens = RegExp(r'\s*([0-9]|.)\s*')
+        .allMatches(line)
+        .map((t) => t.group(0).trim())
+        .toList();
+    return Expression(tokens, precendences);
+  });
 }
 
 int day18_part1() {
   var lines = readLines(18, 'data');
 
-  var precedences = {
-    '+': 0,
-    '*': 0,
-  };
+  var precedences = {'*': 0, '+': 0};
   var expressions = parseLines(lines, precedences);
 
   var values = expressions.map((e) => e.value());
@@ -127,10 +118,7 @@ int day18_part1() {
 int day18_part2() {
   var lines = readLines(18, 'data');
 
-  var precedences = {
-    '+': 1,
-    '*': 0,
-  };
+  var precedences = {'*': 0, '+': 1};
   var expressions = parseLines(lines, precedences);
 
   var values = expressions.map((e) => e.value());
