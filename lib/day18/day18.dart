@@ -74,7 +74,6 @@ class Expression {
     var op1 = operands.pop();
     var operation = operations.pop();
     var result = operation == '*' ? op1 * op2 : op1 + op2;
-    print('$op1 $operation $op2');
     operands.push(result);
   }
 
@@ -114,13 +113,11 @@ Iterable<Expression> parseLines(
 int day18_part1() {
   var lines = readLines(18, 'data');
 
-  var expressions = parseLines(
-    lines,
-    {
-      '+': 0,
-      '*': 0,
-    },
-  );
+  var precedences = {
+    '+': 0,
+    '*': 0,
+  };
+  var expressions = parseLines(lines, precedences);
 
   var values = expressions.map((e) => e.value());
 
@@ -130,13 +127,11 @@ int day18_part1() {
 int day18_part2() {
   var lines = readLines(18, 'data');
 
-  var expressions = parseLines(
-    lines,
-    {
-      '+': 1,
-      '*': 0,
-    },
-  );
+  var precedences = {
+    '+': 1,
+    '*': 0,
+  };
+  var expressions = parseLines(lines, precedences);
 
   var values = expressions.map((e) => e.value());
 
